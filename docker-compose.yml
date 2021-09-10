@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  sensors_data_api:
+    container_name: sensors_data_api
+    build: .
+    ports:
+      - 3003:3003
+    environment:
+      PORT: 3003
+    env_file: .env
+    volumes:
+      - ./:/code
+      - node_modules:/code/node_modules
+    depends_on:
+      - sensors_data_db
+
+  sensors_data_db:
+    container_name: sensors_data_db
+    image: mongo:4.4
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: root-db
+    env_file: .env
+    volumes:
+      - ./db/mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh
+      - ./db/.dbshell:/home/mongodb/.dbshell
+      - mongodb:/data/db
+
+volumes:
+  node_modules:
+  mongodb:
