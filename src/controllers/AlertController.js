@@ -1,18 +1,5 @@
 const Alert = require('../models/AlertSchema');
 
-
-const getAllAlerts = async (req, res) => {
-  try {
-    const alerts = await Alert.find();
-    return res.json(alerts);
-  } catch (err) {
-    return res.status(400).json({
-      message: "Could not get alerts list",
-      error: err
-    });
-  }
-};
-
 const getOneAlert = async (req, res) => {
   const { id } = req.params;
   try {
@@ -26,7 +13,47 @@ const getOneAlert = async (req, res) => {
   }
 };
 
-// TODO: Alerta por trator (ativos/finalizados)
+const defineSearchStatusParam = (status) => {
+  if (status === 'all') {
+    return {};
+  }
+  if (status === 'closed') {
+    return { finishedAt: { $ne: null } };
+  }
+
+  return { finishedAt: null };
+}
+
+const getAllAlerts = async (req, res) => {
+  const { status } = req.query;
+
+  try {
+    const search = defineSearchStatusParam(status);
+    const alerts = await Alert.find(search);
+    return res.json(alerts);
+  } catch (err) {
+    return res.status(400).json({
+      message: "Could not get alerts list",
+      error: err
+    });
+  }
+};
+
+const getAlertsByVehicle = async (req, res) => {
+  const { vehicle } = req.params;
+  const { status } = req.query;
+
+  try {
+    const search = defineSearchStatusParam(status);
+    const alerts = await Alert.find({vehicle, ...search});
+    return res.json(alerts);
+  } catch (err) {
+    return res.status(400).json({
+      message: "Could not find alerts",
+      error: err
+    });
+  }
+};
 
 const createAlert = async (req, res) => {
 
@@ -62,7 +89,23 @@ const updateAlert = async (req, res) => {
   }
 };
 
-// TODO: Finalizar alerta
+
+const closeAlert = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const finishedAt = Date.now()
+    const alert = await Alert.findOneAndUpdate({ _id: id }, {
+      finishedAt
+    }, { new: true })
+    return res.json(alert)
+  } catch (err) {
+    return res.status(400).json({
+      message: "Could not close alert",
+      error: err
+    });
+  }
+}
 
 const deleteAlert = async (req, res) => {
   const { id } = req.params;
@@ -81,7 +124,9 @@ const deleteAlert = async (req, res) => {
 module.exports = {
   getAllAlerts,
   getOneAlert,
+  getAlertsByVehicle,
   createAlert,
   updateAlert,
+  closeAlert,
   deleteAlert
 }
