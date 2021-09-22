@@ -1,4 +1,5 @@
 const Alert = require('../models/AlertSchema');
+const { validateAlertData } = require('../utils/validateAlerts')
 
 const getOneAlert = async (req, res) => {
   const { id } = req.params;
@@ -60,7 +61,7 @@ const createAlert = async (req, res) => {
   const { vehicle, type } = req.body;
 
   try {
-    // TODO: Validar dados
+    validateAlertData({vehicle, type})
     const newAlert = await Alert.create({ vehicle, type })
     return res.json(newAlert)
   } catch (err) {
@@ -76,7 +77,7 @@ const updateAlert = async (req, res) => {
   const { vehicle, type } = req.body;
 
   try {
-    // TODO: Validar dados
+    validateAlertData({ vehicle, type })
     const alert = await Alert.findOneAndUpdate({ _id: id }, {
       vehicle, type
     }, { new: true })
