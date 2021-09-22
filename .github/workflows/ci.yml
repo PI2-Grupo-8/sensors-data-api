@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: build
-        run: docker-compose build
+        run: |
+          cp example.env .env
+          docker-compose build
 
   test:
     runs-on: ubuntu-latest
@@ -17,4 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: run tests
-        run: docker-compose run --rm -e NODE_ENV=test sensors_data_api bash -c  "yarn && yarn jest --coverage --forceExit"
+        run: |
+          cp example.env .env
+          docker-compose run --rm -e NODE_ENV=test sensors_data_api bash -c  "yarn && yarn jest --coverage --forceExit"
