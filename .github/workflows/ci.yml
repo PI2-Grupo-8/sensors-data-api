@@ -1,0 +1,24 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: build
+        run: |
+          cp example.env .env
+          docker-compose build
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: run tests
+        run: |
+          cp example.env .env
+          docker-compose run --rm -e NODE_ENV=test sensors_data_api bash -c  "yarn && yarn jest --coverage --forceExit"

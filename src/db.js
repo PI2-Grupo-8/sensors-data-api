@@ -19,10 +19,12 @@ const connectDB = async () => {
 }
 
 const eraseDB = async (db) => {
-  const collections = Object.keys(db.connection.collections);
-  for (const collectionName of collections) {
-    const collection = db.connection.collections[collectionName];
-    await collection.deleteMany();
+  if (NODE_ENV === 'test') {
+    const collections = Object.keys(db.connection.collections);
+    for (const collectionName of collections) {
+      const collection = db.connection.collections[collectionName];
+      await collection.deleteMany();
+    }
   }
 }
 
