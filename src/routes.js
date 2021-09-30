@@ -3,6 +3,7 @@ const express = require('express');
 const routes = express.Router();
 
 const AlertController = require('./controllers/AlertController');
+const SensorDataController = require('./controllers/SensorDataController');
 
 const { NODE_ENV } = process.env;
 
@@ -20,5 +21,9 @@ routes.post('/alert/create', AlertController.createAlert);
 routes.put('/alert/update/:id', AlertController.updateAlert);
 routes.get('/alert/close/:id', AlertController.closeAlert);
 routes.delete('/alert/delete/:id', AlertController.deleteAlert);
+
+
+routes.post('/data/:vehicle', SensorDataController.createSensorData);
+routes.get('/data/:vehicle/:type', SensorDataController.getData);
 
 module.exports = routes;
