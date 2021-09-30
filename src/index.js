@@ -1,7 +1,8 @@
 const express = require('express');
 
 const routes = require('./routes');
-const { connectDB } = require('./db')
+const { connectDB } = require('./db');
+const { JWTValidate } = require('./utils/JWTValidate');
 
 const { PORT, NODE_ENV } = process.env;
 
@@ -15,6 +16,8 @@ connectDB()
 
 const app = express();
 app.use(express.json());
+
+app.use(JWTValidate);
 app.use(routes);
 
 app.listen(PORT, () => {
