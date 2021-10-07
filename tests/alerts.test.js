@@ -1,13 +1,11 @@
 const request = require('supertest');
-const app = require('../src/index');
+const app = require('../src/app');
 const {
   connectDB,
   eraseDB
 } = require('../src/db')
 
 const ALERT_TYPES = require('../src/utils/alertTypes')
-
-const { NODE_ENV } = process.env;
 
 let db;
 
@@ -17,19 +15,6 @@ beforeAll(async () => {
 
 afterEach(async () => {
   await eraseDB(db);
-});
-
-describe('Main API Tests', () => {
-  it('App is defined', (done) => {
-    expect(app).toBeDefined();
-    done();
-  });
-
-  it('Root route', async () => {
-    const res = await request(app).get('/')
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe(`Sensors Data API is running on ${NODE_ENV}`);
-  });
 });
 
 describe('Alert Tests', () => {

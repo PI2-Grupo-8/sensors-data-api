@@ -1,7 +1,5 @@
-const express = require('express');
-
-const routes = require('./routes');
 const { connectDB } = require('./db')
+const app = require('./app');
 
 const { PORT, NODE_ENV } = process.env;
 
@@ -13,12 +11,6 @@ connectDB()
     console.log('Error on connecting to MongoDB', err);
   });
 
-const app = express();
-app.use(express.json());
-app.use(routes);
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = app;
