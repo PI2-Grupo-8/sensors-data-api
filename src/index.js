@@ -1,6 +1,4 @@
-const express = require('express');
-const routes = require('./routes');
-const cors = require('cors');
+const app = require('../src/app');
 
 const { connectDB } = require('./db')
 
@@ -14,13 +12,6 @@ connectDB()
     console.log('Error on connecting to MongoDB', err);
   });
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(routes);
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = app;
