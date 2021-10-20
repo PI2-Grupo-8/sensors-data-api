@@ -48,7 +48,7 @@ const getGraph = async (req, res) => {
     }).sort('-createdAt');
 
     const multiple = parseInt(data.length / 25);
-    const filteredData = data.filter((_, idx) => (idx % multiple) === 0 )
+    const filteredData = data.length > 25 ? data.filter((_, idx) => (idx % multiple) === 0 ) : data
     const graph = filteredData.map((e) =>{
       return { x: e.createdAt, y: parseFloat(e.value) }
     })
