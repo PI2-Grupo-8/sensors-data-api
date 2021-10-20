@@ -1,11 +1,10 @@
 const app = require('./app')
-const { connectDB , eraseDB} = require('./db')
+const { connectDB } = require('./db')
 
 const { PORT, NODE_ENV } = process.env;
 
 connectDB()
-  .then((db) => {
-    // eraseDB(db)
+  .then(() => {
     console.log(`MongoDB is connected on ${NODE_ENV}`);
   })
   .catch((err) => {
