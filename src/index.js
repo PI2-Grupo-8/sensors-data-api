@@ -1,26 +1,17 @@
-const express = require('express');
-const routes = require('./routes');
-const cors = require('cors');
-
-const { connectDB } = require('./db')
+const app = require('./app')
+const { connectDB , eraseDB} = require('./db')
 
 const { PORT, NODE_ENV } = process.env;
 
 connectDB()
-  .then(() => {
+  .then((db) => {
+    // eraseDB(db)
     console.log(`MongoDB is connected on ${NODE_ENV}`);
   })
   .catch((err) => {
     console.log('Error on connecting to MongoDB', err);
   });
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(routes);
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = app;

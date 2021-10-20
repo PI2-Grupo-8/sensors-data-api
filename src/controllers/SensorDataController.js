@@ -33,6 +33,10 @@ const createSensorData = async (req, res) => {
 
 const getGraph = async (req, res) => {
   const { type, vehicle } = req.params;
+  const { period } = req.query;
+
+  const days = period === 'week' ? 7 : 1;
+
   const oneDay = 24 * 60 * 60 * 1000;
 
   try{
@@ -40,10 +44,12 @@ const getGraph = async (req, res) => {
     const data = await SensorData.find({
       vehicle,
       type,
-      createdAt: { $gt: new Date(Date.now() - oneDay) }
-    });
+      createdAt: { $gt: new Date(Date.now() - (oneDay * days)) }
+    }).sort('-createdAt');
 
-    const graph = data.map((e) =>{
+    const multiple = parseInt(data.length / 25);
+    const filteredData = data.filter((_, idx) => (idx % multiple) === 0 )
+    const graph = filteredData.map((e) =>{
       return { x: e.createdAt, y: parseFloat(e.value) }
     })
 
