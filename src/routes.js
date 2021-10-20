@@ -22,6 +22,7 @@ routes.put('/alert/update/:id', AlertController.updateAlert);
 routes.get('/alert/close/:id', AlertController.closeAlert);
 routes.delete('/alert/delete/:id', AlertController.deleteAlert);
 
+routes.get('/data/graph/:vehicle/:type', SensorDataController.getGraph);
 
 routes.post('/data/:vehicle', SensorDataController.createSensorData);
 routes.get('/data/:vehicle/:type', SensorDataController.getData);

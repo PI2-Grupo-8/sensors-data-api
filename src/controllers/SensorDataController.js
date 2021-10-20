@@ -1,6 +1,5 @@
 const SensorData = require('../models/SensorDataSchema');
-const { validateSensorDataData } = require('../utils/validateSensorData')
-
+const { validateSensorDataData, validateGraphRequest } = require('../utils/validateSensorData')
 
 const getData = async (req, res) => {
   const { vehicle, type } = req.params;
@@ -32,7 +31,33 @@ const createSensorData = async (req, res) => {
   }
 };
 
+const getGraph = async (req, res) => {
+  const { type, vehicle } = req.params;
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  try{
+    validateGraphRequest({type, vehicle})
+    const data = await SensorData.find({
+      vehicle,
+      type,
+      createdAt: { $gt: new Date(Date.now() - oneDay) }
+    });
+
+    const graph = data.map((e) =>{
+      return { x: e.createdAt, y: parseFloat(e.value) }
+    })
+
+    return res.json(graph)
+  } catch (err) {
+    return res.status(400).json({
+      message: "Could not get graph",
+      error: err
+    });
+  }
+}
+
 module.exports = {
   getData,
-  createSensorData
+  createSensorData,
+  getGraph
 }

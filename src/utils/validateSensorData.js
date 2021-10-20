@@ -2,20 +2,10 @@ const ValidationError = require('../utils/validationError')
 const ObjectId = require('mongoose').Types.ObjectId;
 const SENSOR_DATA_TYPES = require('../utils/sensorDataTypes')
 
-function isValidObjectId(id) {
-  if (ObjectId.isValid(id)) {
-    if ((String)(new ObjectId(id)) === id)
-      return true;
-    return false;
-  }
-  return false;
-}
-
-const removeUndefinedValues = (arr) => {
-  return arr.filter((element) => {
-    return element !== undefined;
-  });
-}
+const {
+  isValidObjectId,
+  removeUndefinedValues
+} = require('./basicValidation')
 
 const vehicleValidation = (owner) => {
   if (owner && !isValidObjectId(owner)) {
@@ -51,6 +41,21 @@ const validateSensorDataData = (req_body) => {
   }
 }
 
+const validateGraphRequest = (req_body) => {
+  const { vehicle, type } = req_body;
+  errors = []
+
+  errors.push(vehicleValidation(vehicle))
+  errors.push(typeValidation(type))
+
+  errors = removeUndefinedValues(errors)
+
+  if (errors.length > 0) {
+    throw new ValidationError(errors)
+  }
+}
+
 module.exports = {
-  validateSensorDataData
+  validateSensorDataData,
+  validateGraphRequest
 }
