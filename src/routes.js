@@ -4,6 +4,7 @@ const routes = express.Router();
 
 const AlertController = require('./controllers/AlertController');
 const SensorDataController = require('./controllers/SensorDataController');
+const { loginRequired } = require('./utils/JWTValidate');
 
 const { NODE_ENV } = process.env;
 
@@ -13,18 +14,18 @@ routes.get('/', (req, res) => {
 
 // Alerts can receive a query 'status' equal to 'closed' or 'all'
 // without this query, it returns only opened alerts
-routes.get('/alerts', AlertController.getAllAlerts);
-routes.get('/alerts/vehicle/:vehicle', AlertController.getAlertsByVehicle);
+routes.get('/alerts', loginRequired, AlertController.getAllAlerts);
+routes.get('/alerts/vehicle/:vehicle', loginRequired, AlertController.getAlertsByVehicle);
 
-routes.get('/alert/:id', AlertController.getOneAlert);
-routes.post('/alert/create', AlertController.createAlert);
-routes.put('/alert/update/:id', AlertController.updateAlert);
-routes.get('/alert/close/:id', AlertController.closeAlert);
-routes.delete('/alert/delete/:id', AlertController.deleteAlert);
+routes.get('/alert/:id', loginRequired, AlertController.getOneAlert);
+routes.post('/alert/create', loginRequired, AlertController.createAlert);
+routes.put('/alert/update/:id', loginRequired, AlertController.updateAlert);
+routes.get('/alert/close/:id', loginRequired, AlertController.closeAlert);
+routes.delete('/alert/delete/:id', loginRequired, AlertController.deleteAlert);
 
-routes.get('/data/graph/:vehicle/:type', SensorDataController.getGraph);
+routes.get('/data/graph/:vehicle/:type', loginRequired, SensorDataController.getGraph);
 
-routes.post('/data/:vehicle', SensorDataController.createSensorData);
-routes.get('/data/:vehicle/:type', SensorDataController.getData);
+routes.post('/data/:vehicle', loginRequired, SensorDataController.createSensorData);
+routes.get('/data/:vehicle/:type', loginRequired, SensorDataController.getData);
 
 module.exports = routes;
