@@ -1,8 +1,9 @@
 const express = require('express');
 const routes = require('./routes');
+const { connectDB } = require('./db');
+const { JWTValidate } = require('./utils/JWTValidate');
 const cors = require('cors');
 
-const { connectDB } = require('./db')
 
 const { PORT, NODE_ENV } = process.env;
 
@@ -16,6 +17,8 @@ connectDB()
 
 const app = express();
 app.use(express.json());
+
+app.use(JWTValidate);
 app.use(cors());
 app.use(routes);
 
