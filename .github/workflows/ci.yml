@@ -21,4 +21,4 @@ jobs:
       - name: run tests
         run: |
           cp example.env .env
-          docker-compose run --rm -e NODE_ENV=test sensors_data_api bash -c  "yarn && yarn jest --coverage --forceExit"
+          docker-compose run --rm -e NODE_ENV=test sensors_data_api bash -c  "yarn && yarn jest --coverage --forceExit --runInBand"
