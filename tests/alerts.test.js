@@ -1,4 +1,5 @@
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('../src/index');
 const {
   connectDB,
@@ -7,7 +8,7 @@ const {
 
 const ALERT_TYPES = require('../src/utils/alertTypes')
 
-const { NODE_ENV } = process.env;
+const { NODE_ENV, SECRET } = process.env;
 
 let db;
 
@@ -41,9 +42,20 @@ describe('Alert Tests', () => {
     type: "low_fertilizer"
   }
 
+  const token = jwt.sign({
+    _id: '6170e1900c5f53f7116322b0',
+    name: 'user',
+    email: 'user@email.com',
+    password: '123'
+  }, SECRET, {
+    expiresIn: 240,
+  });
+
   beforeEach(async () => {
-    const res = await request(app).post('/alert/create').send(alert);
-    alertID = res.body._id;
+    const res = await request(app).post('/alert/create').send(alert)
+      .set('authorization', `JWT ${token}`);
+
+     alertID = res.body._id;
     createdAlert = res.body
   });
 
@@ -52,7 +64,8 @@ describe('Alert Tests', () => {
       owner: "61411b17b45f264f37ca89e3",
       type: "low_battery"
     }
-    const res = await request(app).post('/alert/create').send(newAlert);
+    const res = await request(app).post('/alert/create').send(newAlert)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.vehicle).toBe(newAlert.vehicle);
@@ -61,6 +74,7 @@ describe('Alert Tests', () => {
 
   it('Finds a alert by ID', async () => {
     const res = await request(app).get(`/alert/${alertID}`)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.vehicle).toBe(alert.vehicle);
@@ -69,7 +83,7 @@ describe('Alert Tests', () => {
 
   it('Receives error on finding alert', async () => {
     const res = await request(app).get('/alert/123')
-
+      .set('authorization', `JWT ${token}`);
     expect(res.statusCode).toBe(400);
   });
 
@@ -89,17 +103,21 @@ describe('Alert Tests', () => {
     }
 
     beforeEach(async () => {
-      const res = await request(app).post('/alert/create').send(alert2);
+      const res = await request(app).post('/alert/create').send(alert2)
+        .set('authorization', `JWT ${token}`);
       closedAlertID = res.body._id;
 
-      const res2 = await request(app).get(`/alert/close/${closedAlertID}`);
+      const res2 = await request(app).get(`/alert/close/${closedAlertID}`)
+        .set('authorization', `JWT ${token}`);
       closedAlert = res2.body
 
-      await request(app).post('/alert/create').send(alert3);
+      await request(app).post('/alert/create').send(alert3)
+        .set('authorization', `JWT ${token}`);
     });
 
     it('Finds open alerts by vehicle', async () => {
       const res = await request(app).get(`/alerts/vehicle/${vehicleID}`)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([createdAlert]));
@@ -107,6 +125,7 @@ describe('Alert Tests', () => {
 
     it('Finds closed alerts by vehicle', async () => {
       const res = await request(app).get(`/alerts/vehicle/${vehicleID}/?status=closed`)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([closedAlert]));
@@ -114,6 +133,7 @@ describe('Alert Tests', () => {
 
     it('Finds all alerts by vehicle', async () => {
       const res = await request(app).get(`/alerts/vehicle/${vehicleID}/?status=all`)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([createdAlert, closedAlert]));
@@ -130,15 +150,18 @@ describe('Alert Tests', () => {
     }
 
     beforeEach(async () => {
-      const res = await request(app).post('/alert/create').send(alert2);
+      const res = await request(app).post('/alert/create').send(alert2)
+        .set('authorization', `JWT ${token}`);
       closedAlertID = res.body._id;
 
-      const res2 = await request(app).get(`/alert/close/${closedAlertID}`);
+      const res2 = await request(app).get(`/alert/close/${closedAlertID}`)
+        .set('authorization', `JWT ${token}`);
       closedAlert = res2.body
     });
 
     it('Gets open alerts by vehicle', async () => {
       const res = await request(app).get('/alerts/')
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([createdAlert]));
@@ -146,6 +169,7 @@ describe('Alert Tests', () => {
 
     it('Gets closed alerts list', async () => {
       const res = await request(app).get('/alerts/?status=closed')
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([closedAlert]));
@@ -153,6 +177,7 @@ describe('Alert Tests', () => {
 
     it('Gets all alerts list', async () => {
       const res = await request(app).get('/alerts/?status=all')
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(expect.arrayContaining([closedAlert, closedAlert]));
@@ -164,7 +189,8 @@ describe('Alert Tests', () => {
       vehicle: "614b4819b563254b8458b639",
       type: "low_battery"
     }
-    const res = await request(app).put(`/alert/update/${alertID}`).send(updateAlert);
+    const res = await request(app).put(`/alert/update/${alertID}`).send(updateAlert)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.vehicle).toBe(updateAlert.vehicle);
@@ -173,6 +199,7 @@ describe('Alert Tests', () => {
 
   it('Receives error on updating alert', async () => {
     const res = await request(app).put('/alert/update/123').send(alert)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Could not update alert');
@@ -180,6 +207,7 @@ describe('Alert Tests', () => {
 
   it('Deletes alert', async () => {
     const res = await request(app).delete(`/alert/delete/${alertID}`)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe('Alert deleted');
@@ -187,6 +215,7 @@ describe('Alert Tests', () => {
 
   it('Receives error on deleting alert', async () => {
     const res = await request(app).delete('/alert/delete/123')
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Could not delete alert');
@@ -194,6 +223,7 @@ describe('Alert Tests', () => {
 
   it('Closes alert', async () => {
     const res = await request(app).get(`/alert/close/${alertID}`)
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.finishedAt).not.toBe(null)
@@ -201,6 +231,7 @@ describe('Alert Tests', () => {
 
   it('Receives error on closing alert', async () => {
     const res = await request(app).get('/alert/close/123')
+      .set('authorization', `JWT ${token}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Could not close alert');
@@ -213,7 +244,8 @@ describe('Alert Tests', () => {
         vehicle: "123",
         type: "low_fertilizer"
       }
-      const res = await request(app).post('/alert/create').send(errorAlert);
+      const res = await request(app).post('/alert/create').send(errorAlert)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toBe('Could not create alert');
@@ -228,7 +260,8 @@ describe('Alert Tests', () => {
         vehicle: "614b54fe71251f4b8f22761b",
         type: "123"
       }
-      const res = await request(app).post('/alert/create').send(errorAlert);
+      const res = await request(app).post('/alert/create').send(errorAlert)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toBe('Could not create alert');
@@ -246,7 +279,8 @@ describe('Alert Tests', () => {
         vehicle: "123",
         type: "low_fertilizer"
       }
-      const res = await request(app).put(`/alert/update/${alertID}`).send(errorAlert);
+      const res = await request(app).put(`/alert/update/${alertID}`).send(errorAlert)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toBe('Could not update alert');
@@ -261,7 +295,8 @@ describe('Alert Tests', () => {
         vehicle: "614b54fe71251f4b8f22761b",
         type: "123"
       }
-      const res = await request(app).put(`/alert/update/${alertID}`).send(errorAlert);
+      const res = await request(app).put(`/alert/update/${alertID}`).send(errorAlert)
+        .set('authorization', `JWT ${token}`);
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toBe('Could not update alert');
