@@ -1,5 +1,7 @@
 const SensorData = require('../models/SensorDataSchema');
-const { validateSensorDataData, validateGraphRequest } = require('../utils/validateSensorData')
+const Alert = require('../models/AlertSchema');
+const { validateSensorDataData, validateGraphRequest } = require('../utils/validateSensorData');
+const SENSOR_DATA_TYPES = require('../utils/sensorDataTypes');
 
 const getData = async (req, res) => {
   const { vehicle, type } = req.params;
@@ -19,9 +21,19 @@ const createSensorData = async (req, res) => {
   const { vehicle } = req.params;
   const { type, value } = req.body;
 
+  const types_converter = {
+    battery_data: "low_battery",
+    tank_data: "low_fertilizer"
+  }
+
   try {
     validateSensorDataData({ vehicle, type, value })
     const newData = await SensorData.create({ vehicle, type, value })
+
+    if (SENSOR_DATA_TYPES.slice(0, 2).includes(type) && value <= 10) {
+      await Alert.create({ vehicle, type: types_converter[type] })
+    }
+
     return res.json(newData)
   } catch (err) {
     return res.status(400).json({
@@ -39,8 +51,8 @@ const getGraph = async (req, res) => {
 
   const oneDay = 24 * 60 * 60 * 1000;
 
-  try{
-    validateGraphRequest({type, vehicle})
+  try {
+    validateGraphRequest({ type, vehicle })
     const data = await SensorData.find({
       vehicle,
       type,
@@ -48,8 +60,8 @@ const getGraph = async (req, res) => {
     }).sort('-createdAt');
 
     const multiple = parseInt(data.length / 25);
-    const filteredData = data.length > 25 ? data.filter((_, idx) => (idx % multiple) === 0 ) : data
-    const graph = filteredData.map((e) =>{
+    const filteredData = data.length > 25 ? data.filter((_, idx) => (idx % multiple) === 0) : data
+    const graph = filteredData.map((e) => {
       return { x: e.createdAt, y: parseFloat(e.value) }
     })
 
